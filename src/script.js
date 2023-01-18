@@ -49,6 +49,9 @@ mesh1.position.y = -objectDistance * 0;
 mesh2.position.y = -objectDistance * 1;
 mesh3.position.y = -objectDistance * 2;
 
+mesh1.position.x = 2;
+mesh2.position.x = -2;
+
 scene.add(mesh1, mesh2, mesh3);
 
 const sectionMeshes = [mesh1, mesh2, mesh3];
@@ -83,6 +86,10 @@ window.addEventListener('resize', () => {
 /**
  * Camera
  */
+// Group
+const cameraGroup = new THREE.Group();
+scene.add(cameraGroup);
+
 // Base camera
 const camera = new THREE.PerspectiveCamera(
   35,
@@ -91,7 +98,7 @@ const camera = new THREE.PerspectiveCamera(
   100
 );
 camera.position.z = 6;
-scene.add(camera);
+cameraGroup.add(camera);
 
 /**
  * Renderer
@@ -103,6 +110,20 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+// Camera scroll
+let scrollY = window.scrollY;
+window.addEventListener('scroll', () => {
+  scrollY = window.scrollY;
+});
+
+// Cursor
+const cursor = { x: 0, y: 0 };
+
+window.addEventListener('mousemove', (e) => {
+  cursor.x = e.clientX / sizes.width - 0.5;
+  cursor.y = e.clientY / sizes.height - 0.5;
+});
+
 /**
  * Animate
  */
@@ -110,6 +131,15 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  //   Animate camera
+  camera.position.y = (-scrollY / sizes.height) * objectDistance;
+
+  const parallaxX = cursor.x;
+  const parallaxY = -cursor.y;
+
+  cameraGroup.position.x = parallaxX;
+  cameraGroup.position.y = parallaxY;
 
   //   Permanent rotation
   for (const mesh of sectionMeshes) {
