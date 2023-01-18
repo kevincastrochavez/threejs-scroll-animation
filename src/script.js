@@ -11,7 +11,9 @@ const parameters = {
   materialColor: '#ffeded',
 };
 
-gui.addColor(parameters, 'materialColor');
+gui.addColor(parameters, 'materialColor').onChange(() => {
+  material.color.set(parameters.materialColor);
+});
 
 /**
  * Base
@@ -23,10 +25,17 @@ const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 // Objects
+const textureLoader = new THREE.TextureLoader();
+const gradientTexture = textureLoader.load('textures/gradients/3.jpg');
+gradientTexture.magFilter = THREE.NearestFilter;
+
 const material = new THREE.MeshToonMaterial({
   color: parameters.materialColor,
+  gradientMap: gradientTexture,
 });
 
+// Meshes
+const objectDistance = 4;
 const mesh1 = new THREE.Mesh(new THREE.TorusGeometry(1, 0.4, 16, 60), material);
 
 const mesh2 = new THREE.Mesh(new THREE.ConeGeometry(1, 2, 32), material);
@@ -36,7 +45,13 @@ const mesh3 = new THREE.Mesh(
   material
 );
 
+mesh1.position.y = -objectDistance * 0;
+mesh2.position.y = -objectDistance * 1;
+mesh3.position.y = -objectDistance * 2;
+
 scene.add(mesh1, mesh2, mesh3);
+
+const sectionMeshes = [mesh1, mesh2, mesh3];
 
 // Lights
 const directionalLight = new THREE.DirectionalLight('#ffffff', 1);
@@ -95,6 +110,12 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  //   Permanent rotation
+  for (const mesh of sectionMeshes) {
+    mesh.rotation.x = elapsedTime * 0.2;
+    mesh.rotation.y = elapsedTime * 0.25;
+  }
 
   // Render
   renderer.render(scene, camera);
